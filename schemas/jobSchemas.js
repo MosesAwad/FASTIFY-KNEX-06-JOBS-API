@@ -8,9 +8,9 @@ const createJobOpts = {
                 company: {type: 'string', maxLength: 50}, 
                 status: {type: 'string', enum: ['interview', 'pending', 'decline'], default: 'pending'},
                 createdBy: {type: 'integer'}
-            }
-        },
-        required: ['role', 'company', 'createdBy']
+            },
+            required: ['role', 'company', 'createdBy']
+        }
     }
 }
 
