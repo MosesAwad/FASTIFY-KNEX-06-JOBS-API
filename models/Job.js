@@ -47,9 +47,48 @@ class Job {
   async getSingleJob({ jobId, userId }) {
     return this.db("jobs").where({ id: jobId, created_by: userId }).first();
   }
+
+  async updateJob({ jobId, userId }, payload) {
+    // 1. Only allow specific fields to be updated
+    const updates = {
+      // Note 1
+      ...(payload.role && { role: payload.role }), // Only add if truthy
+      ...(payload.company && { company: payload.company }),
+      ...(payload.status && { status: payload.status }),
+      updated_at: this.db.raw("CURRENT_TIMESTAMP"),
+    };
+
+    // 2. Update the job (if owned by userId) and return it
+    const [updatedJob] = await this.db("jobs")
+      .where({ id: jobId, created_by: userId })
+      .update(updates)
+      .returning("*"); // Returns the updated row
+
+    return updatedJob;
+  }
+
+  async deleteJob({ jobId, userId }) {
+    const count = await this.db("jobs")
+      .where({ id: jobId, created_by: userId })
+      .del(); // .del() is Knex's DELETE method
+
+    return count; // Number of rows deleted (0 or 1)
+  }
 }
 
 module.exports = Job;
+
+/*
+	NOTES
+
+	Note 1
+
+		Using the spread operator in that way equates to:
+
+			if ('role' in payload) updates.role = payload.role;
+			if ('company' in payload) updates.company = payload.company;
+			if ('status' in payload) updates.status = payload.status;
+*/
 
 /*
 
